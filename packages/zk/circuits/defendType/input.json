@@ -1,0 +1,5 @@
+{
+    "private_salt": "12345678901234567890123456789012",
+    "private_defense_type": 3,
+    "public_attack_type": 3
+}
