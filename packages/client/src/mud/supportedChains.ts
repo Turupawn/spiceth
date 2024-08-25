@@ -12,9 +12,11 @@
  */
 
 import { MUDChain, mudFoundry, redstone, garnet } from "@latticexyz/common/chains";
+import { polygonAmoy } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 
 /*
  * See https://mud.dev/guides/hello-world/add-chain-client
  * for instructions on how to add networks.
  */
-export const supportedChains: MUDChain[] = [mudFoundry, redstone, garnet];
+export const supportedChains: MUDChain[] = [mudFoundry, redstone, garnet, polygonAmoy, arbitrumSepolia];
