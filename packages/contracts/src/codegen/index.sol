@@ -5,5 +5,6 @@ pragma solidity >=0.8.24;
 
 import { Character, CharacterData } from "./tables/Character.sol";
 import { Player, PlayerData } from "./tables/Player.sol";
+import { SpicePosition } from "./tables/SpicePosition.sol";
 import { PlayerPrivateState } from "./tables/PlayerPrivateState.sol";
 import { VerifierContracts, VerifierContractsData } from "./tables/VerifierContracts.sol";

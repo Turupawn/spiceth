@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { Character, CharacterData, Player, PlayerData, VerifierContracts } from "../codegen/index.sol";
+import { Character, CharacterData, Player, PlayerData, VerifierContracts, SpicePosition } from "../codegen/index.sol";
 import { PlayerPrivateState } from "../codegen/index.sol";
 import { Direction } from "../codegen/common.sol";
 import { getKeysWithValue } from "@latticexyz/world-modules/src/modules/keyswithvalue/getKeysWithValue.sol";
@@ -31,12 +31,18 @@ contract MyGameSystem is System {
     Character.set(x, y + 3, _msgSender(), 4, 0, 0, 0, false);
 
     PlayerPrivateState.set(_msgSender(), commitment);
+
   }
 
   function spawn2(int32 x, int32 y, uint256 commitment) public {
     PlayerData memory playerAtDestination = Player.get(_msgSender());
     //require(playerAtDestination.commitment == 0, "Player already spawned");
     Player.set(_msgSender(), x, y, commitment, false, 0, 100, address(0), 0);
+
+
+    SpicePosition.set(x + 5, y - 2, true);
+    SpicePosition.set(x + 2, y + 4, true);
+    SpicePosition.set(x -3, y + 1, true);
   }
 
   function attack2(address destination, uint32 attackType) public {
@@ -99,6 +105,14 @@ contract MyGameSystem is System {
     //Character.set(,  x, y, 0, 0, character.revealedValue, false);
     Player.setX(_msgSender(), x);
     Player.setY(_msgSender(), y);
+
+
+
+    if(SpicePosition.getExists(x, y))
+    {
+      SpicePosition.set(x, y, false);
+      Player.setSpice(_msgSender(), Player.getSpice(_msgSender())+1);
+    }
   }
 
 

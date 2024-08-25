@@ -59,7 +59,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
   const {
     world,
     networkLayer: {
-      components: { Character, Player },
+      components: { Character, Player, SpicePosition },
       systemCalls: { spawn, spawn2, move, move2, attack, attack2, defend, defend2, playerEntity, getPrivateType }
     },
     scenes: {
@@ -89,7 +89,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
   spiceText.setComponent({
     id: "text",
     once: (text) => {
-      text.setText("Hello");
+      text.setText("");
       text.setStyle({
         fontSize: "32px",
         fill: "#ffffff",
@@ -239,7 +239,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
       if(destinationPlayer) {
         attack2("0x" + destinationOwner.slice(26).toLowerCase(), getPrivateType());
       }else{
-        console.log("No player")
+        //console.log("No player")
       }
       
       startPoint = null;
@@ -314,6 +314,45 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
 
 
+  defineEnterSystem(world, [Has(SpicePosition)], ({entity}) => {
+
+    const spiceObj = objectPool.get(entity, "Sprite");
+    spiceObj.setComponent({
+        id: 'animation',
+        once: (sprite) => {
+          sprite.play(Animations.Unknown);
+        }
+    })
+  });
+
+  defineSystem(world, [Has(SpicePosition)], ({ entity }) => {
+    const spicePosition = decodePosition(entity);
+
+    const spiceExists = getComponentValueStrict(SpicePosition, entity).exists;
+    const pixelPosition = tileCoordToPixelCoord({x: spicePosition.x, y: spicePosition.y}, TILE_WIDTH, TILE_HEIGHT);
+
+    const spiceObj = objectPool.get(entity, "Sprite");
+
+    if(spiceExists) {
+      spiceObj.setComponent({
+        id: "position",
+        once: (sprite) => {
+          sprite.setPosition(pixelPosition.x, pixelPosition.y);
+        }
+      })
+    }else
+    {
+      objectPool.remove(entity);
+    }
+  })
+
+
+
+
+
+
+
+
   defineEnterSystem(world, [Has(Player)], ({ entity }) => {
     const player = getComponentValue(Player, entity);
     const pixelPosition = tileCoordToPixelCoord(player, TILE_WIDTH, TILE_HEIGHT);
@@ -338,7 +377,6 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
     if(player.isAttacked
       && playerEntity == entity) {
-        console.log(player.attackerType)
         defend2(player.attackerType);
     }
   });
@@ -362,7 +400,6 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
         if(!player.isAttacked) {
           sprite.play(Animations.A);
-          console.log(getPrivateType());
         }
         else{
           sprite.play(Animations.Attacked);
@@ -398,7 +435,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
           id: 'animation',
           once: (sprite) => {
             sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
-            sprite.visible = true;
+            sprite.visible = false;//!
           }
         });
       }
@@ -407,7 +444,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
           id: 'animation',
           once: (sprite) => {
             sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
-            sprite.visible = true;
+            sprite.visible = false;//!
           }
         });
       }
@@ -416,7 +453,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
           id: 'animation',
           once: (sprite) => {
             sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
-            sprite.visible = true;
+            sprite.visible = false;//!
           }
         });
       }
@@ -443,7 +480,6 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
     if(player.isAttacked
       && playerEntity == entity) {
-        console.log(player);
         defend2(player.attackerType);
     }
 

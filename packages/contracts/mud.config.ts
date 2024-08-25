@@ -38,6 +38,14 @@ export default defineWorld({
       },
       key: ["owner"]
     },
+    SpicePosition: {
+      schema: {
+        x: "int32",
+        y: "int32",
+        exists: "bool",
+      },
+      key: ["x", "y"]
+    },
     PlayerPrivateState: {
       schema: {
         account: "address",
