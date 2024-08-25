@@ -60,7 +60,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
     world,
     networkLayer: {
       components: { Character, Player },
-      systemCalls: { spawn, spawn2, move, move2, attack, attack2, defend, defend2, playerEntity }
+      systemCalls: { spawn, spawn2, move, move2, attack, attack2, defend, defend2, playerEntity, getPrivateType }
     },
     scenes: {
         Main: { objectPool, input }
@@ -78,11 +78,59 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
   let arrowLine2 = objectPool.get("ArrowLine2", "Line");
   let arrowLine3 = objectPool.get("ArrowLine3", "Line");
 
+  let type1 = objectPool.get("Type1", "Sprite");
+  let type2 = objectPool.get("Type2", "Sprite");
+  let type3 = objectPool.get("Type3", "Sprite");
+
+
+
+  
+  let spiceText = objectPool.get("SpiceText", "Text");
+  spiceText.setComponent({
+    id: "text",
+    once: (text) => {
+      text.setText("Hello");
+      text.setStyle({
+        fontSize: "32px",
+        fill: "#ffffff",
+        backgroundColor: "#000000",
+      });
+      //text.setVisible(false); // Initially hide the text
+    },
+  });
+
+
+
+  type1.setComponent({
+    id: 'animation',
+    once: (sprite) => {
+      sprite.setPosition(0, 0);
+      sprite.visible = false;
+      sprite.play(Animations.Water);
+    }
+  });
+  type2.setComponent({
+    id: 'animation',
+    once: (sprite) => {
+      sprite.setPosition(0, 0);
+      sprite.visible = false;
+      sprite.play(Animations.Fire);
+    }
+  });
+  type3.setComponent({
+    id: 'animation',
+    once: (sprite) => {
+      sprite.setPosition(0, 0);
+      sprite.visible = false;
+      sprite.play(Animations.Grass);
+    }
+  });
+
   let secretCharacterValues = [0, 4, 1, 2, 3];
   let privateSalt = Math.floor(Math.random() * 1000) + 1;
   let privateType = Math.floor(Math.random() * 3) + 1;
 
-  const positionToEntityMap = new Map<string, string>();
+  let positionToEntityMap = new Map<string, string>();
 
   input.pointerdown$.subscribe((event) => {
     const { worldX, worldY } = event.pointer;
@@ -101,9 +149,36 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
   });
 
   input.pointermove$.subscribe((event) => {
-    if (startPoint && draggedEntity) {
-        const { worldX, worldY } = event.pointer;
+    const { worldX, worldY } = event.pointer;
 
+    const currentTile = pixelCoordToTileCoord({ x: worldX, y: worldY }, TILE_WIDTH, TILE_HEIGHT);
+    const positionKey = `${currentTile.x}-${currentTile.y}`;
+    const destinationOwner = positionToEntityMap.get(positionKey)
+    const destinationPlayer = getComponentValue(Player, destinationOwner);
+    if(destinationPlayer) {
+      spiceText.setComponent({
+        id: "text",
+        once: (text) => {
+          text.setText("Spice: "+destinationPlayer.spice);
+          text.setPosition(worldX, worldY-40);
+          text.setStyle({
+            fontSize: "20px",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+          });
+          text.setVisible(true); // Initially hide the text
+        },
+      });
+    }else{
+      spiceText.setComponent({
+        id: "text",
+        once: (text) => {
+          text.setVisible(false); // Initially hide the text
+        },
+      });
+    }
+
+    if (startPoint && draggedEntity) {
         // Draw the main line
         arrowLine1.setComponent({
           id: "line",
@@ -158,60 +233,15 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
       const startTile = pixelCoordToTileCoord(startPoint, TILE_WIDTH, TILE_HEIGHT);
       const endTile = pixelCoordToTileCoord({ x: worldX, y: worldY }, TILE_WIDTH, TILE_HEIGHT);
 
-      const encodedDestinationPosition = encodePosition(endTile.x, endTile.y);
-      const destinationCharacter = getComponentValue(Character, encodedDestinationPosition);
-      const direction = calculateDirection(startTile, endTile);
-
-
       const positionKey = `${endTile.x}-${endTile.y}`;
       const destinationOwner = positionToEntityMap.get(positionKey)
       const destinationPlayer = getComponentValue(Player, destinationOwner);
       if(destinationPlayer) {
-        console.log(destinationPlayer);
-        attack2("0x" + destinationOwner.slice(26).toLowerCase(), 2);
+        attack2("0x" + destinationOwner.slice(26).toLowerCase(), getPrivateType());
       }else{
         console.log("No player")
       }
       
-      
-
-      if(startTile.x == endTile.x
-          && startTile.y == endTile.y)
-      {
-
-        console.log(`Defending character at (${startTile.x}, ${startTile.y})`);
-
-        defend(startTile.x, startTile.y,
-        {
-          character1: secretCharacterValues[1],
-          character2: secretCharacterValues[2],
-          character3: secretCharacterValues[3],
-          character4: secretCharacterValues[4],
-          privateSalt: privateSalt,
-          characterTarget: destinationCharacter.id,
-          attackerLevel: destinationCharacter.attackedByValue
-        });
-
-      } else if (destinationCharacter) {
-        const encodedStartPosition = encodePosition(startTile.x, startTile.y);
-        const startCharacter = getComponentValue(Character, encodedStartPosition);
-
-        attack(startTile.x, startTile.y, endTile.x, endTile.y,
-        {
-          character1: secretCharacterValues[1],
-          character2: secretCharacterValues[2],
-          character3: secretCharacterValues[3],
-          character4: secretCharacterValues[4],
-          privateSalt: privateSalt,
-          characterReveal: startCharacter.id,
-          valueReveal: secretCharacterValues[startCharacter.id]
-        });
-        console.log(`Attacked character from (${startTile.x}, ${startTile.y}) to (${endTile.x}, ${endTile.y})`);
-      } else if (direction != null) {
-        move(startTile.x, startTile.y, direction);
-        console.log(`Moved character from (${startTile.x}, ${startTile.y}) to (${endTile.x}, ${endTile.y}) in direction ${direction}`);
-      } 
-
       startPoint = null;
       draggedEntity = null;
     }
@@ -293,16 +323,6 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
     const positionKey = `${player.x}-${player.y}`;
     positionToEntityMap.set(positionKey, entity);
 
-
-    console.log("@@")
-    console.log(player.isAttacked)
-    console.log(player.isAttacked)
-    console.log(player.isAttacked)
-    console.log(player.isAttacked)
-    console.log(player.isAttacked)
-    console.log("@@/")
-
-
     const characterObj = objectPool.get(entity, "Sprite");
 
     characterObj.setComponent({
@@ -318,7 +338,8 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
     if(player.isAttacked
       && playerEntity == entity) {
-        defend2();
+        console.log(player.attackerType)
+        defend2(player.attackerType);
     }
   });
 
@@ -326,23 +347,110 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
     const player = getComponentValue(Player, entity);
     const pixelPosition = tileCoordToPixelCoord(player, TILE_WIDTH, TILE_HEIGHT);
 
+
+
+    const positionKey = `${player.x}-${player.y}`;
+    positionToEntityMap.set(positionKey, entity);
+
+
+
     const characterObj = objectPool.get(entity, "Sprite");
     characterObj.setComponent({
       id: 'animation',
       once: (sprite) => {
         sprite.setPosition(pixelPosition.x, pixelPosition.y);
 
-        if(!player.isAttacked)
+        if(!player.isAttacked) {
           sprite.play(Animations.A);
-        else
+          console.log(getPrivateType());
+        }
+        else{
           sprite.play(Animations.Attacked);
+        }
       }
     });
 
+
+
+    if(playerEntity == entity)
+    {
+      type1.setComponent({
+        id: 'animation',
+        once: (sprite) => {
+          sprite.visible = false;
+        }
+      });
+      type2.setComponent({
+        id: 'animation',
+        once: (sprite) => {
+          sprite.visible = false;
+        }
+      });
+      type3.setComponent({
+        id: 'animation',
+        once: (sprite) => {
+          sprite.visible = false;
+        }
+      });
+
+      if(getPrivateType() == 1) {
+        type1.setComponent({
+          id: 'animation',
+          once: (sprite) => {
+            sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
+            sprite.visible = true;
+          }
+        });
+      }
+      if(getPrivateType() == 2) {
+        type2.setComponent({
+          id: 'animation',
+          once: (sprite) => {
+            sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
+            sprite.visible = true;
+          }
+        });
+      }
+      if(getPrivateType() == 3) {
+        type3.setComponent({
+          id: 'animation',
+          once: (sprite) => {
+            sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
+            sprite.visible = true;
+          }
+        });
+      }
+    }
+
     if(player.isAttacked
       && playerEntity == entity) {
-        defend2();
+        console.log(player);
+        defend2(player.attackerType);
     }
+
+
+    arrowLine1.setComponent({
+      id: "line",
+      once: (line) => {
+        line.visible = false;
+      },
+    });
+
+    arrowLine2.setComponent({
+      id: "line",
+      once: (line) => {
+        line.visible = false;
+      },
+    });
+
+    arrowLine3.setComponent({
+      id: "line",
+      once: (line) => {
+        line.visible = false;
+      },
+    });
+
+    
   });
 
 

@@ -22,6 +22,9 @@ struct PlayerData {
   uint256 commitment;
   bool isAttacked;
   uint256 attackedAt;
+  uint256 spice;
+  address attackedBy;
+  uint32 attackerType;
 }
 
 library Player {
@@ -29,12 +32,12 @@ library Player {
   ResourceId constant _tableId = ResourceId.wrap(0x74626170700000000000000000000000506c6179657200000000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0049050004042001200000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0081080004042001202014040000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (address)
   Schema constant _keySchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (int32, int32, uint256, bool, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x0049050023231f601f0000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (int32, int32, uint256, bool, uint256, uint256, address, uint32)
+  Schema constant _valueSchema = Schema.wrap(0x0081080023231f601f1f61030000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -50,12 +53,15 @@ library Player {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](5);
+    fieldNames = new string[](8);
     fieldNames[0] = "x";
     fieldNames[1] = "y";
     fieldNames[2] = "commitment";
     fieldNames[3] = "isAttacked";
     fieldNames[4] = "attackedAt";
+    fieldNames[5] = "spice";
+    fieldNames[6] = "attackedBy";
+    fieldNames[7] = "attackerType";
   }
 
   /**
@@ -283,6 +289,132 @@ library Player {
   }
 
   /**
+   * @notice Get spice.
+   */
+  function getSpice(address owner) internal view returns (uint256 spice) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get spice.
+   */
+  function _getSpice(address owner) internal view returns (uint256 spice) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set spice.
+   */
+  function setSpice(address owner, uint256 spice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((spice)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set spice.
+   */
+  function _setSpice(address owner, uint256 spice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((spice)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get attackedBy.
+   */
+  function getAttackedBy(address owner) internal view returns (address attackedBy) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 6, _fieldLayout);
+    return (address(bytes20(_blob)));
+  }
+
+  /**
+   * @notice Get attackedBy.
+   */
+  function _getAttackedBy(address owner) internal view returns (address attackedBy) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 6, _fieldLayout);
+    return (address(bytes20(_blob)));
+  }
+
+  /**
+   * @notice Set attackedBy.
+   */
+  function setAttackedBy(address owner, address attackedBy) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 6, abi.encodePacked((attackedBy)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set attackedBy.
+   */
+  function _setAttackedBy(address owner, address attackedBy) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 6, abi.encodePacked((attackedBy)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get attackerType.
+   */
+  function getAttackerType(address owner) internal view returns (uint32 attackerType) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 7, _fieldLayout);
+    return (uint32(bytes4(_blob)));
+  }
+
+  /**
+   * @notice Get attackerType.
+   */
+  function _getAttackerType(address owner) internal view returns (uint32 attackerType) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 7, _fieldLayout);
+    return (uint32(bytes4(_blob)));
+  }
+
+  /**
+   * @notice Set attackerType.
+   */
+  function setAttackerType(address owner, uint32 attackerType) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 7, abi.encodePacked((attackerType)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set attackerType.
+   */
+  function _setAttackerType(address owner, uint32 attackerType) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(uint160(owner)));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 7, abi.encodePacked((attackerType)), _fieldLayout);
+  }
+
+  /**
    * @notice Get the full data.
    */
   function get(address owner) internal view returns (PlayerData memory _table) {
@@ -315,8 +447,18 @@ library Player {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(address owner, int32 x, int32 y, uint256 commitment, bool isAttacked, uint256 attackedAt) internal {
-    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt);
+  function set(
+    address owner,
+    int32 x,
+    int32 y,
+    uint256 commitment,
+    bool isAttacked,
+    uint256 attackedAt,
+    uint256 spice,
+    address attackedBy,
+    uint32 attackerType
+  ) internal {
+    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt, spice, attackedBy, attackerType);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -330,8 +472,18 @@ library Player {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(address owner, int32 x, int32 y, uint256 commitment, bool isAttacked, uint256 attackedAt) internal {
-    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt);
+  function _set(
+    address owner,
+    int32 x,
+    int32 y,
+    uint256 commitment,
+    bool isAttacked,
+    uint256 attackedAt,
+    uint256 spice,
+    address attackedBy,
+    uint32 attackerType
+  ) internal {
+    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt, spice, attackedBy, attackerType);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -351,7 +503,10 @@ library Player {
       _table.y,
       _table.commitment,
       _table.isAttacked,
-      _table.attackedAt
+      _table.attackedAt,
+      _table.spice,
+      _table.attackedBy,
+      _table.attackerType
     );
 
     EncodedLengths _encodedLengths;
@@ -372,7 +527,10 @@ library Player {
       _table.y,
       _table.commitment,
       _table.isAttacked,
-      _table.attackedAt
+      _table.attackedAt,
+      _table.spice,
+      _table.attackedBy,
+      _table.attackerType
     );
 
     EncodedLengths _encodedLengths;
@@ -389,7 +547,20 @@ library Player {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (int32 x, int32 y, uint256 commitment, bool isAttacked, uint256 attackedAt) {
+  )
+    internal
+    pure
+    returns (
+      int32 x,
+      int32 y,
+      uint256 commitment,
+      bool isAttacked,
+      uint256 attackedAt,
+      uint256 spice,
+      address attackedBy,
+      uint32 attackerType
+    )
+  {
     x = (int32(uint32(Bytes.getBytes4(_blob, 0))));
 
     y = (int32(uint32(Bytes.getBytes4(_blob, 4))));
@@ -399,6 +570,12 @@ library Player {
     isAttacked = (_toBool(uint8(Bytes.getBytes1(_blob, 40))));
 
     attackedAt = (uint256(Bytes.getBytes32(_blob, 41)));
+
+    spice = (uint256(Bytes.getBytes32(_blob, 73)));
+
+    attackedBy = (address(Bytes.getBytes20(_blob, 105)));
+
+    attackerType = (uint32(Bytes.getBytes4(_blob, 125)));
   }
 
   /**
@@ -412,7 +589,16 @@ library Player {
     EncodedLengths,
     bytes memory
   ) internal pure returns (PlayerData memory _table) {
-    (_table.x, _table.y, _table.commitment, _table.isAttacked, _table.attackedAt) = decodeStatic(_staticData);
+    (
+      _table.x,
+      _table.y,
+      _table.commitment,
+      _table.isAttacked,
+      _table.attackedAt,
+      _table.spice,
+      _table.attackedBy,
+      _table.attackerType
+    ) = decodeStatic(_staticData);
   }
 
   /**
@@ -444,9 +630,12 @@ library Player {
     int32 y,
     uint256 commitment,
     bool isAttacked,
-    uint256 attackedAt
+    uint256 attackedAt,
+    uint256 spice,
+    address attackedBy,
+    uint32 attackerType
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(x, y, commitment, isAttacked, attackedAt);
+    return abi.encodePacked(x, y, commitment, isAttacked, attackedAt, spice, attackedBy, attackerType);
   }
 
   /**
@@ -460,9 +649,12 @@ library Player {
     int32 y,
     uint256 commitment,
     bool isAttacked,
-    uint256 attackedAt
+    uint256 attackedAt,
+    uint256 spice,
+    address attackedBy,
+    uint32 attackerType
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt);
+    bytes memory _staticData = encodeStatic(x, y, commitment, isAttacked, attackedAt, spice, attackedBy, attackerType);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

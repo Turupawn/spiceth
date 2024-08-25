@@ -17,6 +17,10 @@ interface ICircomDefendVerifier {
     function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[4] calldata _pubSignals) external view returns (bool);
 }
 
+interface ICircomDefend2Verifier {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[3] calldata _pubSignals) external view returns (bool);
+}
+
 contract MyGameSystem is System {
   function spawn(int32 x, int32 y, uint256 commitment) public {
     //require(PlayerPrivateState.getCommitment(_msgSender()) == 0, "Player already spawned");
@@ -32,16 +36,42 @@ contract MyGameSystem is System {
   function spawn2(int32 x, int32 y, uint256 commitment) public {
     PlayerData memory playerAtDestination = Player.get(_msgSender());
     //require(playerAtDestination.commitment == 0, "Player already spawned");
-    Player.set(_msgSender(), x, y, commitment, false, 0);
+    Player.set(_msgSender(), x, y, commitment, false, 0, 100, address(0), 0);
   }
 
   function attack2(address destination, uint32 attackType) public {
-    Player.setIsAttacked(destination, true);
-    Player.setAttackedAt(destination, block.timestamp);
+    Player.set(destination,
+      Player.getX(destination),
+      Player.getY(destination),
+      Player.getCommitment(destination),
+      true,// isAttacked
+      block.timestamp,// attackedAt
+      Player.getSpice(destination),
+      _msgSender(),// attackedBy
+      attackType);
   }
 
-  function defend2() public {
+  function defend2(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[3] calldata _pubSignals,
+    uint256 newCommitment) public {
+    ICircomRevealVerifier(VerifierContracts.getRevealContractAddress()).verifyProof(_pA, _pB, _pC, _pubSignals);
+    uint256 commitment = _pubSignals[0];
+    uint256 battleResult = _pubSignals[1];
+    uint256 attackerType = _pubSignals[2];
+    require(commitment == Player.getCommitment(_msgSender()),"Invalid commitment");
+    if(battleResult==0)//Defender wins
+    {
+      Player.setSpice(Player.getAttackedBy(_msgSender()), Player.getSpice(Player.getAttackedBy(_msgSender()))-10);
+      Player.setSpice(_msgSender(), Player.getSpice(_msgSender())+10);
+    }else if(battleResult==1)//Attacker wins
+    {
+      Player.setSpice(Player.getAttackedBy(_msgSender()), Player.getSpice(Player.getAttackedBy(_msgSender()))+10);
+      Player.setSpice(_msgSender(), Player.getSpice(_msgSender())-10);
+    }else if(battleResult==2)//Tie
+    {
+
+    }
     Player.setIsAttacked(_msgSender(), false);
+    Player.setCommitment(_msgSender(), newCommitment);
   }
 
   function move2(Direction direction) public {

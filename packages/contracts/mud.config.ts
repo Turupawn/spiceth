@@ -32,6 +32,9 @@ export default defineWorld({
         commitment: "uint256",
         isAttacked: "bool",
         attackedAt: "uint256",
+        spice: "uint256",
+        attackedBy: "address",
+        attackerType: "uint32",
       },
       key: ["owner"]
     },

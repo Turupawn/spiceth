@@ -17,7 +17,13 @@ interface IMyGameSystem {
 
   function app__attack2(address destination, uint32 attackType) external;
 
-  function app__defend2() external;
+  function app__defend2(
+    uint[2] calldata _pA,
+    uint[2][2] calldata _pB,
+    uint[2] calldata _pC,
+    uint[3] calldata _pubSignals,
+    uint256 newCommitment
+  ) external;
 
   function app__move2(Direction direction) external;
 

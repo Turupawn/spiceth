@@ -14,6 +14,9 @@ export enum Animations {
   Dead = "Dead",
   Unknown = "Unknown",
   Attacked = "Attacked",
+  Water = "Water",
+  Fire = "Fire",
+  Grass = "Grass",
 }
 
 export enum Directions {

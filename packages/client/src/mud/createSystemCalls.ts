@@ -8,6 +8,7 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 let privateSalt = Math.floor(Math.random() * 1000) + 1;
 let privateType = Math.floor(Math.random() * 3) + 1;
+let defending = false;
 
 export function createSystemCalls(
   { worldContract, waitForTransaction, playerEntity }: SetupNetworkResult,
@@ -34,6 +35,11 @@ export function createSystemCalls(
   };
 
   const spawn2 = async (x: number, y: number) => {
+    privateSalt = Math.floor(Math.random() * 1000) + 1;
+    privateType = Math.floor(Math.random() * 3) + 1;
+
+    defending = false;
+
     const { proof, publicSignals } = await groth16.fullProve(
       {
         "private_salt": "" + privateSalt,
@@ -44,6 +50,7 @@ export function createSystemCalls(
       "./zk_artifacts/defendType_final.zkey"
     );
     let commitment : number = publicSignals[0];
+
     const tx = await worldContract.write.app__spawn2([x, y, commitment]);
     await waitForTransaction(tx);
     return getComponentValue(Character, singletonEntity);
@@ -55,9 +62,60 @@ export function createSystemCalls(
     return getComponentValue(Character, singletonEntity);
   };
 
-  const defend2 = async () => {
-    const tx = await worldContract.write.app__defend2([]);
+  const generateNewCommitment = async () => {
+    privateSalt = Math.floor(Math.random() * 1000) + 1;
+    privateType = Math.floor(Math.random() * 3) + 1;
+    const { proof, publicSignals } = await groth16.fullProve(
+      {
+        "private_salt": "" + privateSalt,
+        "private_defense_type": privateType,
+        "public_attack_type": 3
+      },
+      "./zk_artifacts/defendType.wasm",
+      "./zk_artifacts/defendType_final.zkey"
+    );
+    return publicSignals[0]
+  }
+
+  const defend2 = async (attackerType: number) => {
+    if(defending==true)
+    {
+      return;
+    }
+
+    defending = true;
+    console.log("attackerType:");
+    console.log(attackerType);
+    const { proof, publicSignals } = await groth16.fullProve(
+      {
+        "private_salt": "" + privateSalt,
+        "private_defense_type": privateType,
+        "public_attack_type": attackerType
+      },
+      "./zk_artifacts/defendType.wasm",
+      "./zk_artifacts/defendType_final.zkey"
+    );
+
+    let pa = proof.pi_a
+    let pb = proof.pi_b
+    let pc = proof.pi_c
+    pa.pop()
+    pb.pop()
+    pc.pop()
+
+    let commitment : number = publicSignals[0];
+
+    // Begin generate new commitment
+    //privateSalt = Math.floor(Math.random() * 1000) + 1;
+    //privateType = Math.floor(Math.random() * 3) + 1;
+    const newCommitment = await generateNewCommitment();
+    // End generate new commitment
+    
+    const tx = await worldContract.write.app__defend2([pa, pb, pc, publicSignals, newCommitment]);
     await waitForTransaction(tx);
+
+    defending = false;
+
     return getComponentValue(Character, singletonEntity);
   };
 
@@ -109,7 +167,11 @@ export function createSystemCalls(
     return getComponentValue(Character,  singletonEntity);
   }
 
+  const getPrivateType = () => {
+    return privateType;
+  };
+
   return {
-    spawn, spawn2, move, move2, attack, attack2, defend, defend2, playerEntity
+    spawn, spawn2, move, move2, attack, attack2, defend, defend2, playerEntity, getPrivateType
   };
 }
