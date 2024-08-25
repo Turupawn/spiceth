@@ -104,8 +104,8 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
   type1.setComponent({
     id: 'animation',
     once: (sprite) => {
-      sprite.setPosition(0, 0);
-      sprite.visible = false;
+      sprite.setPosition(350, -350);
+      sprite.visible = true;
       sprite.play(Animations.Water);
     }
   });
@@ -411,12 +411,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
 
     if(playerEntity == entity)
     {
-      type1.setComponent({
-        id: 'animation',
-        once: (sprite) => {
-          sprite.visible = false;
-        }
-      });
+      
       type2.setComponent({
         id: 'animation',
         once: (sprite) => {
@@ -431,13 +426,7 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
       });
 
       if(getPrivateType() == 1) {
-        type1.setComponent({
-          id: 'animation',
-          once: (sprite) => {
-            sprite.setPosition(pixelPosition.x, pixelPosition.y-32);
-            sprite.visible = false;//!
-          }
-        });
+        
       }
       if(getPrivateType() == 2) {
         type2.setComponent({
