@@ -1,4 +1,4 @@
-Autonomous world with sustianiable economics and privacy enabled.
+Autonomous world with sustianiable economics and privacy enabled. Built for Aleph hackathon.
 
 ## Deployments
 
