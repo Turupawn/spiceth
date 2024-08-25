@@ -420,6 +420,25 @@ export const createMyGameSystem = (layer: PhaserLayer) => {
           }
         });
       }
+
+
+
+      characterObj.setComponent({
+        id: 'animation',
+        once: (sprite) => {
+
+          if(getPrivateType() == 1) {
+            sprite.play(Animations.B);
+          }
+          if(getPrivateType() == 2) {
+            sprite.play(Animations.C);
+          }
+          if(getPrivateType() == 3) {
+            sprite.play(Animations.D);
+          }
+
+        }
+      });
     }
 
     if(player.isAttacked
