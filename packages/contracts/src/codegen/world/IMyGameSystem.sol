@@ -13,7 +13,7 @@ import { Direction } from "../common.sol";
 interface IMyGameSystem {
   function app__spawn(int32 x, int32 y, uint256 commitment) external;
 
-  function app__spawn2(int32 x, int32 y, uint256 commitment) external;
+  function app__spawn2(int32 x, int32 y, uint256 commitment) external payable;
 
   function app__attack2(address destination, uint32 attackType) external;
 

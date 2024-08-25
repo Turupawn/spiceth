@@ -12,6 +12,31 @@ import { IWorld } from "../src/codegen/world/IWorld.sol";
 
 import { VerifierContracts } from "../src/codegen/index.sol";
 
+
+
+contract DummyLido { 
+    function deposit() external payable returns (uint256) {
+
+    }
+    function requestWithdraw(address _recipient, uint256 _amount) external returns (uint256) {
+
+    }
+    function rebase(int128 _accruedRewards) external
+    {
+
+    }
+    function getTotalEtherClaimOf(address _user) external view returns (uint256)
+    {
+
+    }
+    function amountForShare(uint256 _share) external view returns (uint256){
+
+    }
+}
+
+
+
+
 contract PostDeploy is Script {
   function run(address worldAddress) external {
     // Specify a store so that you can use tables directly in PostDeploy
@@ -28,6 +53,9 @@ contract PostDeploy is Script {
 
     address defendVerifier = address(new DefendVerifier());
     VerifierContracts.setDefendContractAddress(defendVerifier);
+
+    address dummyLido = address(new DummyLido());
+    VerifierContracts.setLsdContractAddress(dummyLido);
 
     vm.stopBroadcast();
   }

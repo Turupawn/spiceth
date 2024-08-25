@@ -56,7 +56,8 @@ export default defineWorld({
     VerifierContracts: {
       schema: {
         revealContractAddress: "address",
-        defendContractAddress: "address"
+        defendContractAddress: "address",
+        lsdContractAddress: "address"
       },
       key: [],
     },

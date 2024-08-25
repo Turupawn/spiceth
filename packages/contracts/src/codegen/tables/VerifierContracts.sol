@@ -19,6 +19,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct VerifierContractsData {
   address revealContractAddress;
   address defendContractAddress;
+  address lsdContractAddress;
 }
 
 library VerifierContracts {
@@ -26,12 +27,12 @@ library VerifierContracts {
   ResourceId constant _tableId = ResourceId.wrap(0x746261707000000000000000000000005665726966696572436f6e7472616374);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0028020014140000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x003c030014141400000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of ()
   Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (address, address)
-  Schema constant _valueSchema = Schema.wrap(0x0028020061610000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (address, address, address)
+  Schema constant _valueSchema = Schema.wrap(0x003c030061616100000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -46,9 +47,10 @@ library VerifierContracts {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
+    fieldNames = new string[](3);
     fieldNames[0] = "revealContractAddress";
     fieldNames[1] = "defendContractAddress";
+    fieldNames[2] = "lsdContractAddress";
   }
 
   /**
@@ -142,6 +144,44 @@ library VerifierContracts {
   }
 
   /**
+   * @notice Get lsdContractAddress.
+   */
+  function getLsdContractAddress() internal view returns (address lsdContractAddress) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (address(bytes20(_blob)));
+  }
+
+  /**
+   * @notice Get lsdContractAddress.
+   */
+  function _getLsdContractAddress() internal view returns (address lsdContractAddress) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (address(bytes20(_blob)));
+  }
+
+  /**
+   * @notice Set lsdContractAddress.
+   */
+  function setLsdContractAddress(address lsdContractAddress) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lsdContractAddress)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set lsdContractAddress.
+   */
+  function _setLsdContractAddress(address lsdContractAddress) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lsdContractAddress)), _fieldLayout);
+  }
+
+  /**
    * @notice Get the full data.
    */
   function get() internal view returns (VerifierContractsData memory _table) {
@@ -172,8 +212,8 @@ library VerifierContracts {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(address revealContractAddress, address defendContractAddress) internal {
-    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress);
+  function set(address revealContractAddress, address defendContractAddress, address lsdContractAddress) internal {
+    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress, lsdContractAddress);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -186,8 +226,8 @@ library VerifierContracts {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(address revealContractAddress, address defendContractAddress) internal {
-    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress);
+  function _set(address revealContractAddress, address defendContractAddress, address lsdContractAddress) internal {
+    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress, lsdContractAddress);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -201,7 +241,11 @@ library VerifierContracts {
    * @notice Set the full data using the data struct.
    */
   function set(VerifierContractsData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.revealContractAddress, _table.defendContractAddress);
+    bytes memory _staticData = encodeStatic(
+      _table.revealContractAddress,
+      _table.defendContractAddress,
+      _table.lsdContractAddress
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -215,7 +259,11 @@ library VerifierContracts {
    * @notice Set the full data using the data struct.
    */
   function _set(VerifierContractsData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.revealContractAddress, _table.defendContractAddress);
+    bytes memory _staticData = encodeStatic(
+      _table.revealContractAddress,
+      _table.defendContractAddress,
+      _table.lsdContractAddress
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -230,10 +278,12 @@ library VerifierContracts {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (address revealContractAddress, address defendContractAddress) {
+  ) internal pure returns (address revealContractAddress, address defendContractAddress, address lsdContractAddress) {
     revealContractAddress = (address(Bytes.getBytes20(_blob, 0)));
 
     defendContractAddress = (address(Bytes.getBytes20(_blob, 20)));
+
+    lsdContractAddress = (address(Bytes.getBytes20(_blob, 40)));
   }
 
   /**
@@ -247,7 +297,7 @@ library VerifierContracts {
     EncodedLengths,
     bytes memory
   ) internal pure returns (VerifierContractsData memory _table) {
-    (_table.revealContractAddress, _table.defendContractAddress) = decodeStatic(_staticData);
+    (_table.revealContractAddress, _table.defendContractAddress, _table.lsdContractAddress) = decodeStatic(_staticData);
   }
 
   /**
@@ -274,9 +324,10 @@ library VerifierContracts {
    */
   function encodeStatic(
     address revealContractAddress,
-    address defendContractAddress
+    address defendContractAddress,
+    address lsdContractAddress
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(revealContractAddress, defendContractAddress);
+    return abi.encodePacked(revealContractAddress, defendContractAddress, lsdContractAddress);
   }
 
   /**
@@ -287,9 +338,10 @@ library VerifierContracts {
    */
   function encode(
     address revealContractAddress,
-    address defendContractAddress
+    address defendContractAddress,
+    address lsdContractAddress
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress);
+    bytes memory _staticData = encodeStatic(revealContractAddress, defendContractAddress, lsdContractAddress);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

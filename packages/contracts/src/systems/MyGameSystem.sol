@@ -21,6 +21,28 @@ interface ICircomDefend2Verifier {
     function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[3] calldata _pubSignals) external view returns (bool);
 }
 
+/////// LSDs ///////
+/////// LSDs ///////
+interface ILiquidityPool { 
+    function deposit() external payable returns (uint256);
+    function requestWithdraw(address _recipient, uint256 _amount) external returns (uint256);
+    function rebase(int128 _accruedRewards) external;
+    function getTotalEtherClaimOf(address _user) external view returns (uint256);
+    function amountForShare(uint256 _share) external view returns (uint256);
+}
+
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 value) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 value) external returns (bool);
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
+}
+/////// LSDs ///////
+/////// LSDs ///////
+
+
 contract MyGameSystem is System {
   function spawn(int32 x, int32 y, uint256 commitment) public {
     //require(PlayerPrivateState.getCommitment(_msgSender()) == 0, "Player already spawned");
@@ -34,7 +56,9 @@ contract MyGameSystem is System {
 
   }
 
-  function spawn2(int32 x, int32 y, uint256 commitment) public {
+  function spawn2(int32 x, int32 y, uint256 commitment) public payable {
+    uint SPAWN_PRICE = 0.001 ether;
+    require(_msgValue() == SPAWN_PRICE, "Invalid spawn amounta");
     PlayerData memory playerAtDestination = Player.get(_msgSender());
     //require(playerAtDestination.commitment == 0, "Player already spawned");
     Player.set(_msgSender(), x, y, commitment, false, 0, 100, address(0), 0);
@@ -43,6 +67,9 @@ contract MyGameSystem is System {
     SpicePosition.set(x + 5, y - 2, true);
     SpicePosition.set(x + 2, y + 4, true);
     SpicePosition.set(x -3, y + 1, true);
+
+    //LSDs
+    ILiquidityPool(VerifierContracts.getLsdContractAddress()).deposit{value: 0}();
   }
 
   function attack2(address destination, uint32 attackType) public {

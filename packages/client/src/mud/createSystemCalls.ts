@@ -51,7 +51,9 @@ export function createSystemCalls(
     );
     let commitment : number = publicSignals[0];
 
-    const tx = await worldContract.write.app__spawn2([x, y, commitment]);
+    const tx = await worldContract.write.app__spawn2([x, y, commitment],{
+      value:  1000000000000000n
+    });
     await waitForTransaction(tx);
     return getComponentValue(Character, singletonEntity);
   };
